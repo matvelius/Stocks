@@ -10,9 +10,7 @@ import SwiftUI
 
 struct StocksOverviewView: View {
     @Environment(\.modelContext) var modelContext
-    
-//    @Query var stocks: [Stock]
-    
+        
     @StateObject var viewModel: StocksOverviewViewModel
     
     @State private var showingAlert = false
