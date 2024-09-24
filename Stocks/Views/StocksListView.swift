@@ -59,13 +59,14 @@ struct StocksListView: View {
                 Spacer()
                 Button {
                     showAddStockBottomSheet = false
+                    searchText = ""
                 } label: {
                     Image(systemName: "xmark.circle")
                         .font(.title)
                         .foregroundColor(.gray)
                 }
                 .controlSize(.large)
-                .padding(5)
+                .padding(7)
             }
             HStack {
                 Image(systemName: "magnifyingglass")
@@ -108,7 +109,7 @@ struct StocksListView: View {
                     .padding(11)
             } else if viewModel.isSearchInProgress {
                 Text("Searching, please wait...")
-            } else if viewModel.searchResults.isEmpty || searchText.isEmpty {
+            } else if !viewModel.maximumRequestsExceeded && (viewModel.searchResults.isEmpty || searchText.isEmpty) {
                 Text("No results found.")
             } else {
                 List {
@@ -120,7 +121,9 @@ struct StocksListView: View {
                             HStack {
                                 Text(result.symbol)
                                 Button {
-                                    viewModel.addStock(result.symbol, result.name)
+                                    if !stockList.contains(where: { $0.symbol == result.symbol }) {
+                                        viewModel.addStock(result.symbol, result.name)
+                                    }
                                 } label: {
                                     if stockList.contains(where: { $0.symbol == result.symbol }) {
                                         Image(systemName: "checkmark.rectangle.fill")

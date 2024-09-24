@@ -9,6 +9,11 @@ import XCTest
 @testable import Stocks
 import SwiftData
 
+// I would really want to make the tests more extensive,
+// and cover most of the data service and view model code,
+// however given the time constraints I decided to prioritize
+// functionality and edge cases instead.
+
 final class DataServiceTests: XCTestCase {
     
     var dataService: DataService!

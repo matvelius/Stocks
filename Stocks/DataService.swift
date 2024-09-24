@@ -167,7 +167,8 @@ public final class DataService: ObservableObject {
     private func setupSearchSubjectSubscription() {
         searchSubject
             .debounce(for: 1, scheduler: DispatchQueue.global())
-            .throttle(for: 1, scheduler: DispatchQueue.global(), latest: true)
+        // TODO: decide if needed
+//            .throttle(for: 1, scheduler: DispatchQueue.global(), latest: true)
             .removeDuplicates()
             .sink { [weak self] searchTerm in
                 guard let self, !searchTerm.isEmpty else { return }

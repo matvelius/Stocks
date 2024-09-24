@@ -18,7 +18,6 @@ class StocksListViewModel: ObservableObject {
     @Published var searchResults = [StockListItem]()
     
     var maximumRequestsExceeded: Bool = false
-    var stockAlreadyInTheList: Bool = false
     
     @Published var errorMessage: String?
     
@@ -41,17 +40,8 @@ class StocksListViewModel: ObservableObject {
     func addStock(_ symbol: String, _ name: String) {
         do {
             try dataService.addStock(symbol, name)
-            stockAlreadyInTheList = false
         } catch {
-            if let addStockError = error as? DataServiceError {
-                switch addStockError {
-                case .stockAlreadyInTheList:
-                    stockAlreadyInTheList = true
-                    setErrorMessage()
-                default:
-                    print("addStock error: \(error)")
-                }
-            }
+            print("addStock error: \(error)")
         }
     }
     
@@ -85,9 +75,9 @@ class StocksListViewModel: ObservableObject {
         dataService.$maximumRequestsExceeded
             .dropFirst()
             .receive(on: RunLoop.main)
-            .sink { [weak self] results in
+            .sink { [weak self] bool in
                 guard let self else { return }
-                self.maximumRequestsExceeded = true
+                self.maximumRequestsExceeded = bool
                 setErrorMessage()
             }
             .store(in: &cancellables)
@@ -96,8 +86,6 @@ class StocksListViewModel: ObservableObject {
     private func setErrorMessage() {
         if maximumRequestsExceeded {
             errorMessage = "You've exceeded the maximum requests per minute, please wait or upgrade your subscription to continue."
-        } else if stockAlreadyInTheList {
-            errorMessage = "The stock you've tried to add is already in the list."
         } else {
             errorMessage = nil
         }
