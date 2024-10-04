@@ -107,6 +107,8 @@ struct StocksListView: View {
             if firstLoad {
                 Text("Please type in a stock name or symbol to search.")
                     .padding(11)
+            } else if viewModel.maximumRequestsExceeded {
+                EmptyView()
             } else if viewModel.isSearchInProgress {
                 Text("Searching, please wait...")
             } else if !viewModel.maximumRequestsExceeded && (viewModel.searchResults.isEmpty || searchText.isEmpty) {

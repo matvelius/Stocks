@@ -11,6 +11,7 @@ import SwiftData
 
 public final class DataService: ObservableObject {
     private let keychainHelper: KeychainHelper
+    private let networkService: NetworkServiceProtocol
     
     private var modelContext: ModelContext
     
@@ -31,9 +32,12 @@ public final class DataService: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     init(modelContext: ModelContext,
-         keychainHelper: KeychainHelper = KeychainHelper()) {
+         keychainHelper: KeychainHelper = KeychainHelper(),
+         networkService: NetworkServiceProtocol = NetworkService()) {
         self.modelContext = modelContext
         self.keychainHelper = keychainHelper
+        self.networkService = networkService
+        
         self.loadListOfStocks()
         self.setupSearchSubjectSubscription()
     }
@@ -92,7 +96,7 @@ public final class DataService: ObservableObject {
             throw DataServiceError.unableToCreateURLs
         }
         
-        let data = try await getData(for: stockHistoryURL)
+        let data = try await networkService.getData(for: stockHistoryURL)
         
         let decoder = JSONDecoder()
         let stockHistoryResponse = try decoder.decode(StockHistoryResponse.self, from: data)
@@ -118,10 +122,10 @@ public final class DataService: ObservableObject {
         }
             
         // get aggregate response for last market closing date
-        async let fetchedDataForLastMarketClosingDate = try await getData(for: lastMarketClosingDateURL)
+        async let fetchedDataForLastMarketClosingDate = try await networkService.getData(for: lastMarketClosingDateURL)
         
         // get aggregate response for the day before the last market closing date
-        async let fetchedDataForDayBeforeLastMarketClosingDate = try await getData(for: dayBeforeLastMarketClosingDateURL)
+        async let fetchedDataForDayBeforeLastMarketClosingDate = try await networkService.getData(for: dayBeforeLastMarketClosingDateURL)
         
         // make the two API calls simultaneously
         let (dataForLastMarketClosingDate, dataForDayBeforeLastMarketClosingDate) = try await (fetchedDataForLastMarketClosingDate, fetchedDataForDayBeforeLastMarketClosingDate)
@@ -166,84 +170,39 @@ public final class DataService: ObservableObject {
     
     private func setupSearchSubjectSubscription() {
         searchSubject
-            .debounce(for: 1, scheduler: DispatchQueue.global())
+            .debounce(for: 0.25, scheduler: DispatchQueue.global())
             .removeDuplicates()
             .sink { [weak self] searchTerm in
                 guard let self, !searchTerm.isEmpty else { return }
-                do {
-                    try self.searchDataPublisher(for: searchTerm)
-                    self.maximumRequestsExceeded = false
-                } catch {
-                    guard let knownError = error as? DataServiceError else {
-                        print("search error: \(error)")
-                        return
-                    }
-                    switch knownError {
-                    case .maximumRequestsExceeded:
-                        self.maximumRequestsExceeded = true
-                    default:
-                        break
-                    }
-                }
+                try? self.performSearch(with: searchTerm)
             }
             .store(in: &cancellables)
     }
     
-    private func searchDataPublisher(for searchTerm: String) throws {
+    private func performSearch(with searchTerm: String) throws {
         guard let searchURLString = try? self.searchUrlString(for: searchTerm),
               let searchURL = URL(string: searchURLString) else {
             throw DataServiceError.unableToCreateURLs
         }
-        URLSession.shared.dataTaskPublisher(for: searchURL)
-            .tryMap { [weak self] (data, response) -> Data in
-                if let self, let httpURLResponse = response as? HTTPURLResponse,
-                   httpURLResponse.statusCode != 200 {
-                    switch httpURLResponse.statusCode {
-                    case 401:
-                        self.apiKeyExists = true
-                    case 429:
-                        self.maximumRequestsExceeded = true
-                    default:
-                        break
-                    }
+        Task {
+            do {
+                let searchResultsData = try await self.networkService.getData(for: searchURL)
+                let searchResults = try JSONDecoder().decode(TickerSearchResponse.self, from: searchResultsData)
+                self.searchResults = searchResults.results.filter { $0.name != nil }
+                    .map { StockListItem(symbol: $0.ticker, name: $0.name ?? "n/a") }
+                self.maximumRequestsExceeded = false
+            } catch {
+                guard let knownError = error as? NetworkServiceError else {
+                    return
                 }
-                return data
-            }
-            .decode(type: TickerSearchResponse.self, decoder: JSONDecoder())
-            .catch { error in
-                print("searchDataPublisher error: \(error)")
-                return Just(TickerSearchResponse(results: [], error: error.localizedDescription))
-            }
-            .tryMap { tickerSearchResponse in
-                return tickerSearchResponse.results
-            }
-            .catch { error in
-                print("searchDataPublisher error: \(error)")
-                return Just([Ticker]())
-            }
-            .sink { [weak self] tickers in
-                guard let self else { return }
-                self.searchResults = tickers.filter { $0.name != nil }
-                                            .map { StockListItem(symbol: $0.ticker, name: $0.name ?? "n/a") }
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func getData(for url: URL) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(from: url)
-        
-        if let httpURLResponse = response as? HTTPURLResponse {
-            switch httpURLResponse.statusCode {
-            case 401:
-                throw DataServiceError.unknownAPIKey
-            case 429:
-                throw DataServiceError.maximumRequestsExceeded
-            default:
-                break
+                switch knownError {
+                case .maximumRequestsExceeded:
+                    self.maximumRequestsExceeded = true
+                default:
+                    break
+                }
             }
         }
-        
-        return data
     }
                                      
     func aggregateUrlString(using date: String) throws -> String {

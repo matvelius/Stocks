@@ -11,6 +11,9 @@
 		BA62D7BC2CA0E9C1000973E2 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA62D7BB2CA0E9C1000973E2 /* LoadingView.swift */; };
 		BA62D7FE2CA11275000973E2 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA62D7FD2CA11275000973E2 /* String+Extensions.swift */; };
 		BAD0C2032CA2416F00D76D64 /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD0C2022CA2416F00D76D64 /* Date+Extensions.swift */; };
+		BAE8655E2CAF15840045CDE7 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE8655D2CAF15840045CDE7 /* NetworkService.swift */; };
+		BAE865612CAF19950045CDE7 /* MockNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE865602CAF19950045CDE7 /* MockNetworkService.swift */; };
+		BAE865662CAF21350045CDE7 /* NetworkServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE865652CAF21350045CDE7 /* NetworkServiceProtocol.swift */; };
 		BAEFCEBD2C9B993D0029F815 /* StocksApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAEFCEBC2C9B993D0029F815 /* StocksApp.swift */; };
 		BAEFCEC12C9B993E0029F815 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BAEFCEC02C9B993E0029F815 /* Assets.xcassets */; };
 		BAEFCEC42C9B993E0029F815 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BAEFCEC32C9B993E0029F815 /* Preview Assets.xcassets */; };
@@ -44,6 +47,9 @@
 		BA62D7FD2CA11275000973E2 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 		BAD0C2012CA1245A00D76D64 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = TestPlan.xctestplan; path = StocksTests/TestPlan.xctestplan; sourceTree = "<group>"; };
 		BAD0C2022CA2416F00D76D64 /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
+		BAE8655D2CAF15840045CDE7 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		BAE865602CAF19950045CDE7 /* MockNetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockNetworkService.swift; sourceTree = "<group>"; };
+		BAE865652CAF21350045CDE7 /* NetworkServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkServiceProtocol.swift; sourceTree = "<group>"; };
 		BAEFCEB92C9B993D0029F815 /* Stocks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Stocks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAEFCEBC2C9B993D0029F815 /* StocksApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StocksApp.swift; sourceTree = "<group>"; };
 		BAEFCEC02C9B993E0029F815 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -85,11 +91,28 @@
 			isa = PBXGroup;
 			children = (
 				BAEFCEF22C9B9A870029F815 /* KeychainHelper.swift */,
+				BAE8655D2CAF15840045CDE7 /* NetworkService.swift */,
 				BA62D7B92CA0989A000973E2 /* DataServiceHelpers.swift */,
 				BA62D7FD2CA11275000973E2 /* String+Extensions.swift */,
 				BAD0C2022CA2416F00D76D64 /* Date+Extensions.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		BAE8655F2CAF197E0045CDE7 /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				BAE865602CAF19950045CDE7 /* MockNetworkService.swift */,
+			);
+			path = Mocks;
+			sourceTree = "<group>";
+		};
+		BAE865642CAF21160045CDE7 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				BAE865652CAF21350045CDE7 /* NetworkServiceProtocol.swift */,
+			);
+			path = Protocols;
 			sourceTree = "<group>";
 		};
 		BAEFCEB02C9B993D0029F815 = {
@@ -116,6 +139,7 @@
 			children = (
 				BAEFCEBC2C9B993D0029F815 /* StocksApp.swift */,
 				BAEFCEF02C9B9A410029F815 /* DataService.swift */,
+				BAE865642CAF21160045CDE7 /* Protocols */,
 				BA62D7B82CA0987C000973E2 /* Helpers */,
 				BAEFCEF42C9B9B320029F815 /* Model */,
 				BAEFCEE62C9B99860029F815 /* Views */,
@@ -138,6 +162,7 @@
 			isa = PBXGroup;
 			children = (
 				BAEFCECD2C9B993E0029F815 /* DataServiceTests.swift */,
+				BAE8655F2CAF197E0045CDE7 /* Mocks */,
 			);
 			path = StocksTests;
 			sourceTree = "<group>";
@@ -286,6 +311,7 @@
 				BAEFCEF12C9B9A410029F815 /* DataService.swift in Sources */,
 				BAEFCEFA2C9B9F2F0029F815 /* StocksListViewModel.swift in Sources */,
 				BAEFCEED2C9B99F00029F815 /* StocksOverviewViewModel.swift in Sources */,
+				BAE8655E2CAF15840045CDE7 /* NetworkService.swift in Sources */,
 				BA62D7BC2CA0E9C1000973E2 /* LoadingView.swift in Sources */,
 				BAEFCEF32C9B9A870029F815 /* KeychainHelper.swift in Sources */,
 				BA62D7BA2CA0989A000973E2 /* DataServiceHelpers.swift in Sources */,
@@ -294,6 +320,7 @@
 				BAEFCEE92C9B99CE0029F815 /* StocksOverviewView.swift in Sources */,
 				BA62D7FE2CA11275000973E2 /* String+Extensions.swift in Sources */,
 				BAEFCEF82C9B9F220029F815 /* StocksListView.swift in Sources */,
+				BAE865662CAF21350045CDE7 /* NetworkServiceProtocol.swift in Sources */,
 				BAEFCEEB2C9B99D90029F815 /* StockDetailView.swift in Sources */,
 				BAEFCEBD2C9B993D0029F815 /* StocksApp.swift in Sources */,
 				BAEFCEFF2C9F37120029F815 /* LineGraphView.swift in Sources */,
@@ -304,6 +331,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BAE865612CAF19950045CDE7 /* MockNetworkService.swift in Sources */,
 				BAEFCECE2C9B993E0029F815 /* DataServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

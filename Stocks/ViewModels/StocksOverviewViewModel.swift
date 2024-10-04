@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os.signpost
 
 @MainActor
 class StocksOverviewViewModel: ObservableObject {
@@ -20,9 +21,14 @@ class StocksOverviewViewModel: ObservableObject {
     
     @Published var stocks = [Stock]()
     
+    @Published var log: OSLog?
+    
+    private(set) var signpostID: OSSignpostID?
+    
     init(keychainHelper: KeychainHelper = KeychainHelper()) {
         self.keychainHelper = keychainHelper
         self.apiKeyExists = keychainHelper.getAPIKeyFromKeychain() != nil
+        launchSignpost()
     }
     
     func addDataService(dataService: DataService) {
@@ -57,6 +63,7 @@ class StocksOverviewViewModel: ObservableObject {
                 print("fetchStocks error: \(error)")
                 isLoading = false
             }
+            endSignpost()
         }
     }
     
@@ -69,6 +76,23 @@ class StocksOverviewViewModel: ObservableObject {
         dataService.$stocks
             .receive(on: RunLoop.main)
             .assign(to: &$stocks)
+    }
+    
+    func launchSignpost() {
+        let log = OSLog(
+            subsystem: "com.matveycodes.Stocks",
+            category: "initialLoad"
+        )
+        self.log = log
+        let signpostID = OSSignpostID(log: log)
+        self.signpostID = signpostID
+        
+        os_signpost(.begin, log: log, name: "Initial Load", signpostID: signpostID)
+    }
+    
+    func endSignpost() {
+        guard let log, let signpostID else { return }
+        os_signpost(.end, log: log, name: "Initial Load", signpostID: signpostID)
     }
 }
 

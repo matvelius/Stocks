@@ -5,25 +5,24 @@
 //  Created by Matvey Kostukovsky on 9/18/24.
 //
 
-import XCTest
-@testable import Stocks
 import SwiftData
+import XCTest
 
-// I would really want to make the tests more extensive,
-// and cover most of the data service and view model code,
-// however given the time constraints I decided to prioritize
-// functionality and edge cases instead.
+@testable import Stocks
 
 final class DataServiceTests: XCTestCase {
     
     var dataService: DataService!
     var keychainHelper: KeychainHelper!
+    var mockNetworkService: NetworkServiceProtocol!
 
     override func setUpWithError() throws {
         keychainHelper = KeychainHelper()
         keychainHelper.deleteAPIKeyFromKeychain()
+        mockNetworkService = MockNetworkService()
         dataService = DataService(modelContext: ModelContext(try ModelContainer(for: StockListItem.self)),
-                                  keychainHelper: keychainHelper)
+                                  keychainHelper: keychainHelper,
+                                  networkService: mockNetworkService)
     }
     
     func testAggregateUrlString_whenNoAPIKeyExists_throwsError() {
